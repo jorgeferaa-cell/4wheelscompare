@@ -102,6 +102,11 @@ export async function getCompare(ids: number[]): Promise<CarDetail[]> {
   return res.json();
 }
 
+export async function getVersionScore(id: number): Promise<Score4WResult> {
+  const res = await fetch(`${API}/api/versions/${id}/score`, { cache: 'no-store' });
+  return res.json();
+}
+
 export interface SearchResult {
   id:       number;
   make:     string;
