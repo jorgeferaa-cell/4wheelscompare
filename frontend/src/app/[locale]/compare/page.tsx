@@ -6,6 +6,10 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getCompare, CarDetail } from '@/lib/api';
 import Logo from '@/components/Logo';
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ResponsiveContainer, Legend, Tooltip,
+} from 'recharts';
 
 type Tab      = 'specs' | 'race' | 'equipment';
 type RaceMode = '201m' | '400m' | '800m' | 'trip';
@@ -630,6 +634,69 @@ function CompareContent() {
                 </table>
               </div>
             </div>
+
+            {/* ── 4W Radar card ── */}
+            {cars.some(c => c.score4w) && (() => {
+              const DIMS = [
+                { key: 'price'       as const, label: locale === 'pt' ? 'Preço'          : 'Price'       },
+                { key: 'performance' as const, label: 'Performance'                                       },
+                { key: 'economy'     as const, label: locale === 'pt' ? 'Economia'       : 'Economy'     },
+                { key: 'reliability' as const, label: locale === 'pt' ? 'Confiabilidade' : 'Reliability' },
+              ];
+              const data = DIMS.map(({ key, label }) => {
+                const row: Record<string, string | number> = { subject: label };
+                cars.forEach((car, i) => { row[`car_${i}`] = car.score4w?.breakdown[key] ?? 0; });
+                return row;
+              });
+              return (
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                    <span>🕸️</span>
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      {locale === 'pt' ? 'Radar 4W' : '4W Radar'}
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    <ResponsiveContainer width="100%" height={350}>
+                      <RadarChart data={data} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
+                        <PolarGrid stroke="#e5e7eb" />
+                        <PolarAngleAxis
+                          dataKey="subject"
+                          tick={{ fontSize: 12, fontWeight: 600, fill: '#6b7280' }}
+                        />
+                        <PolarRadiusAxis
+                          angle={90}
+                          domain={[0, 10]}
+                          tickCount={6}
+                          tick={{ fontSize: 10, fill: '#9ca3af' }}
+                        />
+                        {cars.map((car, i) => (
+                          <Radar
+                            key={car.id}
+                            name={`${car.model.make.name} ${car.model.name}`}
+                            dataKey={`car_${i}`}
+                            stroke={SLOT_COLORS[i]}
+                            fill={SLOT_COLORS[i]}
+                            fillOpacity={0.12}
+                            strokeWidth={2}
+                            dot={{ r: 3, fill: SLOT_COLORS[i] }}
+                          />
+                        ))}
+                        <Legend
+                          iconType="circle"
+                          iconSize={8}
+                          wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                        />
+                        <Tooltip
+                          contentStyle={{ borderRadius: 8, fontSize: 12, borderColor: '#e5e7eb' }}
+                          formatter={(value) => [`${value} / 10`]}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ── Performance card ── */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
