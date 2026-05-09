@@ -230,6 +230,23 @@ function Spinner() {
   );
 }
 
+type ConvertType = 'speed' | 'consumption' | 'weight' | 'distance' | 'tank' | 'torque' | 'power' | 'time';
+
+function convertUnits(value: number, type: ConvertType, locale: string): { value: number; unit: string } {
+  const imp = locale === 'en';
+  const r1  = (v: number) => Math.round(v * 10) / 10;
+  switch (type) {
+    case 'speed':       return imp ? { value: r1(value * 0.621371),  unit: 'mph'   } : { value, unit: 'km/h'    };
+    case 'consumption': return imp ? { value: r1(235.214 / value),   unit: 'mpg'   } : { value, unit: 'L/100km' };
+    case 'weight':      return imp ? { value: r1(value * 2.20462),   unit: 'lbs'   } : { value, unit: 'kg'      };
+    case 'distance':    return imp ? { value: r1(value * 0.621371),  unit: 'mi'    } : { value, unit: 'km'      };
+    case 'tank':        return imp ? { value: r1(value * 0.264172),  unit: 'gal'   } : { value, unit: 'L'       };
+    case 'torque':      return imp ? { value: r1(value * 0.737562),  unit: 'lb-ft' } : { value, unit: 'Nm'      };
+    case 'power':       return { value, unit: 'hp' };
+    case 'time':        return { value, unit: 's'  };
+  }
+}
+
 function CompareContent() {
   const t            = useTranslations();
   const searchParams = useSearchParams();
@@ -248,13 +265,13 @@ function CompareContent() {
   const [barWidths, setBarWidths] = useState<number[]>([]);
 
   const PERF_ROWS = [
-    { key: 'horsepower',       label: t('compare.specHorsepower'), unit: 'cv',      lowerIsBetter: false },
-    { key: 'torque_nm',        label: t('compare.specTorque'),     unit: 'Nm',      lowerIsBetter: false },
-    { key: 'weight_kg',        label: t('compare.specWeight'),     unit: 'kg',      lowerIsBetter: true  },
-    { key: 'acc_0_100',        label: t('compare.specAcc'),        unit: 's',       lowerIsBetter: true  },
-    { key: 'top_speed_kmh',    label: t('compare.specTopSpeed'),   unit: 'km/h',    lowerIsBetter: false },
-    { key: 'fuel_consumption', label: t('compare.specConsumption'),unit: 'L/100km', lowerIsBetter: true  },
-    { key: 'tank_liters',      label: t('compare.specTank'),       unit: 'L',       lowerIsBetter: false },
+    { key: 'horsepower',       label: t('compare.specHorsepower'), convertType: 'power'       as ConvertType, lowerIsBetter: false },
+    { key: 'torque_nm',        label: t('compare.specTorque'),     convertType: 'torque'      as ConvertType, lowerIsBetter: false },
+    { key: 'weight_kg',        label: t('compare.specWeight'),     convertType: 'weight'      as ConvertType, lowerIsBetter: true  },
+    { key: 'acc_0_100',        label: t('compare.specAcc'),        convertType: 'time'        as ConvertType, lowerIsBetter: true  },
+    { key: 'top_speed_kmh',    label: t('compare.specTopSpeed'),   convertType: 'speed'       as ConvertType, lowerIsBetter: false },
+    { key: 'fuel_consumption', label: t('compare.specConsumption'),convertType: 'consumption' as ConvertType, lowerIsBetter: true  },
+    { key: 'tank_liters',      label: t('compare.specTank'),       convertType: 'tank'        as ConvertType, lowerIsBetter: false },
   ];
 
   const SCORE_ROWS = [
@@ -710,13 +727,18 @@ function CompareContent() {
                 <table className="w-full">
                   <thead><CarColHeaders /></thead>
                   <tbody>
-                    {PERF_ROWS.map(({ key, label, unit, lowerIsBetter }) => {
-                      const vals     = cars.map(c => (c as unknown as Record<string, unknown>)[key] as number);
-                      const best     = lowerIsBetter ? Math.min(...vals) : Math.max(...vals);
-                      const worst    = lowerIsBetter ? Math.max(...vals) : Math.min(...vals);
-                      const allEqual = vals.every(v => v === vals[0]);
-                      const maxVal   = Math.max(...vals);
-                      const minVal   = Math.min(...vals);
+                    {PERF_ROWS.map(({ key, label, convertType, lowerIsBetter }) => {
+                      const rawVals   = cars.map(c => (c as unknown as Record<string, unknown>)[key] as number);
+                      const converted = rawVals.map(v => convertUnits(v, convertType, locale));
+                      const vals      = converted.map(c => c.value);
+                      const unit      = converted[0]?.unit ?? '';
+                      // mpg inverts the better/worse direction vs L/100km
+                      const effLIB    = convertType === 'consumption' && locale === 'en' ? false : lowerIsBetter;
+                      const best      = effLIB ? Math.min(...vals) : Math.max(...vals);
+                      const worst     = effLIB ? Math.max(...vals) : Math.min(...vals);
+                      const allEqual  = vals.every(v => v === vals[0]);
+                      const maxVal    = Math.max(...vals);
+                      const minVal    = Math.min(...vals);
                       return (
                         <tr key={key} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/40 transition-colors">
                           <td className="px-5 py-4 whitespace-nowrap">
@@ -726,7 +748,7 @@ function CompareContent() {
                           {vals.map((val, i) => {
                             const isBest  = !allEqual && val === best;
                             const isWorst = !allEqual && val === worst;
-                            const pct     = lowerIsBetter
+                            const pct     = effLIB
                               ? Math.round((minVal / val) * 100)
                               : Math.round((val / maxVal) * 100);
                             const barColor = isBest ? '#059669' : isWorst ? '#DC2626' : SLOT_COLORS[i];
@@ -834,13 +856,14 @@ function CompareContent() {
                     <tr className="hover:bg-gray-50/40 transition-colors">
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="text-sm font-semibold text-gray-700">{t('compare.specRange')}</div>
-                        <div className="text-[11px] text-gray-400">km</div>
+                        <div className="text-[11px] text-gray-400">{locale === 'en' ? 'mi' : 'km'}</div>
                       </td>
                       {(() => {
-                        const rangeVals = cars.map(c => calcRange(c));
+                        const rangeVals = cars.map(c => convertUnits(calcRange(c), 'distance', locale).value);
                         const maxR  = Math.max(...rangeVals);
                         const minR  = Math.min(...rangeVals);
                         const allEq = rangeVals.every(v => v === rangeVals[0]);
+                        const unit  = locale === 'en' ? 'mi' : 'km';
                         return cars.map((car, i) => {
                           const range   = rangeVals[i];
                           const isBest  = !allEq && range === maxR;
@@ -850,7 +873,7 @@ function CompareContent() {
                               <div className="flex flex-col items-center gap-0.5">
                                 <span className="text-sm font-bold"
                                   style={{ color: isBest ? '#059669' : isWorst ? '#DC2626' : '#1f2937' }}>
-                                  {range} km
+                                  {range} {unit}
                                 </span>
                                 {isBest  && <div className="text-[10px] font-bold" style={{ color: '#059669' }}>{t('compare.best')}</div>}
                                 {isWorst && <div className="text-[10px] font-bold" style={{ color: '#DC2626' }}>{t('compare.worst')}</div>}
@@ -893,7 +916,10 @@ function CompareContent() {
                 <div className="mb-4 p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-600">{t('compare.raceTripDist')}</span>
-                    <span className="text-xl font-black" style={{ color: BRAND }}>{tripDist} km</span>
+                    <span className="text-xl font-black" style={{ color: BRAND }}>
+                      {convertUnits(tripDist, 'distance', locale).value}{' '}
+                      {convertUnits(tripDist, 'distance', locale).unit}
+                    </span>
                   </div>
                   <input
                     type="range" min={1} max={1000} value={tripDist}
@@ -901,7 +927,9 @@ function CompareContent() {
                     className="w-full accent-[#D85A30]"
                   />
                   <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>1 km</span><span>500 km</span><span>1000 km</span>
+                    <span>1 {locale === 'en' ? 'mi' : 'km'}</span>
+                    <span>{locale === 'en' ? '311' : '500'} {locale === 'en' ? 'mi' : 'km'}</span>
+                    <span>{locale === 'en' ? '621' : '1000'} {locale === 'en' ? 'mi' : 'km'}</span>
                   </div>
                 </div>
               )}
@@ -951,12 +979,15 @@ function CompareContent() {
                                 : mode === '400m' ? car.simulation.sprint_400m
                                 :                   car.simulation.sprint_800m;
                       timeLabel  = `${sim.time_seconds.toFixed(2)}s`;
-                      speedLabel = `${Math.round(sim.final_speed_kmh)} km/h`;
+                      const spd  = convertUnits(sim.final_speed_kmh, 'speed', locale);
+                      speedLabel = `${Math.round(spd.value)} ${spd.unit}`;
                     } else {
                       const tr   = computeTrip(car, tripDist);
                       timeLabel  = `${tr.timeHours}h ${tr.timeMinutes}min`;
-                      speedLabel = `${tr.avgSpeed} km/h`;
-                      fuelLabel  = `${tr.fuelL} L`;
+                      const spd  = convertUnits(tr.avgSpeed, 'speed', locale);
+                      speedLabel = `${Math.round(spd.value)} ${spd.unit}`;
+                      const fuel = convertUnits(tr.fuelL, 'tank', locale);
+                      fuelLabel  = `${fuel.value} ${fuel.unit}`;
                     }
 
                     return (
