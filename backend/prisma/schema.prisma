@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Make {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  country String?
+  models  Model[]
+}
+
+model Model {
+  id       Int       @id @default(autoincrement())
+  name     String
+  makeId   Int
+  make     Make      @relation(fields: [makeId], references: [id])
+  versions Version[]
+
+  @@unique([name, makeId])
+}
+
+model Version {
+  id    Int    @id @default(autoincrement())
+  name  String
+  year  Int
+
+  modelId Int
+  model   Model @relation(fields: [modelId], references: [id])
+
+  // Performance
+  horsepower    Int
+  torque_nm     Int
+  weight_kg     Int
+  top_speed_kmh Int
+  acc_0_100     Float
+
+  // Fuel / Energy
+  fuel_consumption Float
+  tank_liters      Float
+  fuel_type        String @default("gasoline")
+
+  // Pricing
+  price_br Float?
+  price_us Float?
+
+  // Market & Category
+  market   String @default("BOTH")
+  category String @default("sedan")
+
+  // Equipment (18 boolean/int fields)
+  eq_abs             Boolean @default(false)
+  eq_airbags         Int     @default(0)
+  eq_leather         Boolean @default(false)
+  eq_sunroof         Boolean @default(false)
+  eq_apple_carplay   Boolean @default(false)
+  eq_navigation      Boolean @default(false)
+  eq_premium_audio   Boolean @default(false)
+  eq_heated_seats    Boolean @default(false)
+  eq_wireless_charge Boolean @default(false)
+  eq_hud             Boolean @default(false)
+  eq_lane_assist     Boolean @default(false)
+  eq_auto_brake      Boolean @default(false)
+  eq_blind_spot      Boolean @default(false)
+  eq_adaptive_cruise Boolean @default(false)
+  eq_launch_control  Boolean @default(false)
+  eq_awd             Boolean @default(false)
+  eq_air_suspension  Boolean @default(false)
+  eq_digital_cockpit Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
