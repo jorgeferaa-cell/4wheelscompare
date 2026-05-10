@@ -4,11 +4,25 @@ const router = Router();
 
 const cache = new Map<string, string | null>();
 
+const EXCLUDE_KEYWORDS = [
+  'interior', 'wheel', 'engine', 'badge', 'emblem', 'logo',
+  'detail', 'trunk', 'dashboard', 'steering', 'seat', 'door',
+  'light', 'headlight', 'taillight', 'grille', 'tire', 'rim',
+  'police', 'taxi', 'crash', 'accident', 'wrecked',
+];
+
+function isBadTitle(title: string): boolean {
+  const lower = title.toLowerCase();
+  return EXCLUDE_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 async function fetchWikimediaImage(make: string, model: string, year: number): Promise<string | null> {
-  const query = `${make} ${model} ${year} car`;
+  // Year confuses Wikimedia (matches photo dates, not model years) — omit it.
+  // Negations in srsearch are unreliable; title filtering below handles exclusions.
+  const query = `${make} ${model} car`;
   const searchUrl =
     `https://commons.wikimedia.org/w/api.php?action=query&list=search` +
-    `&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=5&format=json`;
+    `&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=20&format=json`;
 
   const searchRes = await fetch(searchUrl, {
     headers: { 'User-Agent': '4wheelscompare/1.0 (jorgeferaa@gmail.com)' },
@@ -19,30 +33,32 @@ async function fetchWikimediaImage(make: string, model: string, year: number): P
     query?: { search?: Array<{ title: string }> };
   };
 
-  const hits = searchData.query?.search ?? [];
+  const hits = (searchData.query?.search ?? []).filter(h => !isBadTitle(h.title));
   if (hits.length === 0) return null;
 
-  // Try each hit until we get a valid image URL
-  for (const hit of hits) {
-    const title = hit.title;
-    const infoUrl =
-      `https://commons.wikimedia.org/w/api.php?action=query` +
-      `&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&format=json`;
+  // Resolve up to the first 5 clean hits in parallel, return first URL found
+  const candidates = hits.slice(0, 5);
+  const titleList  = candidates.map(h => h.title).join('|');
+  const infoUrl    =
+    `https://commons.wikimedia.org/w/api.php?action=query` +
+    `&titles=${encodeURIComponent(titleList)}&prop=imageinfo&iiprop=url&format=json`;
 
-    const infoRes = await fetch(infoUrl, {
-      headers: { 'User-Agent': '4wheelscompare/1.0 (jorgeferaa@gmail.com)' },
-    });
-    if (!infoRes.ok) continue;
+  const infoRes = await fetch(infoUrl, {
+    headers: { 'User-Agent': '4wheelscompare/1.0 (jorgeferaa@gmail.com)' },
+  });
+  if (!infoRes.ok) return null;
 
-    const infoData = await infoRes.json() as {
-      query?: { pages?: Record<string, { imageinfo?: Array<{ url: string }> }> };
-    };
+  const infoData = await infoRes.json() as {
+    query?: { pages?: Record<string, { title?: string; imageinfo?: Array<{ url: string }> }> };
+  };
 
-    const pages = infoData.query?.pages ?? {};
-    for (const page of Object.values(pages)) {
-      const url = page.imageinfo?.[0]?.url;
-      if (url) return url;
-    }
+  const pages = infoData.query?.pages ?? {};
+
+  // Return the first URL that comes from a non-bad title
+  for (const title of candidates.map(h => h.title)) {
+    const page = Object.values(pages).find(p => p.title === title);
+    const url  = page?.imageinfo?.[0]?.url;
+    if (url) return url;
   }
 
   return null;
