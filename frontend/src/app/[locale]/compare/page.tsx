@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { getCompare, CarDetail } from '@/lib/api';
+import { getCompare, getCarImage, CarDetail } from '@/lib/api';
 import Logo from '@/components/Logo';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -256,6 +256,7 @@ function CompareContent() {
   const compareQuery = idsParam ? `?ids=${idsParam}` : '';
 
   const [cars,      setCars]      = useState<CarDetail[]>([]);
+  const [images,    setImages]    = useState<(string | null)[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [tab,       setTab]       = useState<Tab>('specs');
   const [mode,      setMode]      = useState<RaceMode>('400m');
@@ -327,6 +328,9 @@ function CompareContent() {
     getCompare(idsParam.split(',').map(Number).filter(Boolean)).then(data => {
       setCars(data);
       setLoading(false);
+      Promise.all(
+        data.map(car => getCarImage(car.model.make.name, car.model.name, car.year))
+      ).then(setImages);
     });
   }, [idsParam]);
 
@@ -475,9 +479,17 @@ function CompareContent() {
                 <div style={{ height: 3, backgroundColor: SLOT_COLORS[i] }} />
                 <div className="p-4">
 
-                  {/* SVG silhouette + slot badge */}
+                  {/* Photo or SVG silhouette + slot badge */}
                   <div className="relative mb-3">
-                    <CarSilhouette category={car.category} color={SLOT_COLORS[i]} />
+                    {images[i] ? (
+                      <img
+                        src={images[i]!}
+                        alt={`${car.model.make.name} ${car.model.name}`}
+                        className="w-full h-14 object-contain rounded"
+                      />
+                    ) : (
+                      <CarSilhouette category={car.category} color={SLOT_COLORS[i]} />
+                    )}
                     <span
                       className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-white text-[10px] font-black shadow"
                       style={{ backgroundColor: SLOT_COLORS[i] }}>

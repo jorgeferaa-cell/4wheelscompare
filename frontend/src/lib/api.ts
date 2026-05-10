@@ -126,3 +126,12 @@ export async function searchCars(q: string, market: string): Promise<SearchResul
   );
   return res.json();
 }
+
+export async function getCarImage(make: string, model: string, year: number): Promise<string | null> {
+  const res = await fetch(
+    `${API}/api/images?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`,
+    { cache: 'no-store' }
+  );
+  const data = await res.json() as { imageUrl: string | null };
+  return data.imageUrl;
+}

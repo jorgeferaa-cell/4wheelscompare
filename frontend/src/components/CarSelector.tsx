@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { getMakes, getModels, getYears, getVersions, getVersionScore, Make, Model, VersionSummary, Score4WResult } from '@/lib/api';
+import { getMakes, getModels, getYears, getVersions, getVersionScore, getCarImage, Make, Model, VersionSummary, Score4WResult } from '@/lib/api';
 
 export interface PreselectInfo {
   id:       number;
@@ -58,6 +58,7 @@ export default function CarSelector({
   const [year,      setYear]      = useState<number | null>(null);
   const [versionId, setVersionId] = useState<number | null>(null);
   const [score,     setScore]     = useState<Score4WResult | null>(null);
+  const [image,     setImage]     = useState<string | null>(null);
 
   // Market change → reset everything
   useEffect(() => {
@@ -110,6 +111,14 @@ export default function CarSelector({
     getVersionScore(id).then(setScore).catch(() => setScore(null));
   }, [preselect?.id, versionId]); // eslint-disable-line
 
+  // Fetch car image when preselect changes
+  useEffect(() => {
+    if (!preselect) { setImage(null); return; }
+    getCarImage(preselect.make, preselect.model, preselect.year)
+      .then(setImage)
+      .catch(() => setImage(null));
+  }, [preselect?.id]); // eslint-disable-line
+
   const handleVersion = (id: number) => {
     setVersionId(id);
     onVersionSelected(id);
@@ -141,6 +150,13 @@ export default function CarSelector({
       {/* Body: preselect card OR cascade dropdowns */}
       {preselect ? (
         <div className="p-4 flex flex-col gap-3 flex-1">
+          {image && (
+            <img
+              src={image}
+              alt={`${preselect.make} ${preselect.model}`}
+              className="w-full h-20 object-contain rounded-lg"
+            />
+          )}
           <div className="flex items-start gap-2.5">
             <span className="text-xl shrink-0 mt-0.5">{catIcon(preselect.category)}</span>
             <div className="flex-1 min-w-0">
