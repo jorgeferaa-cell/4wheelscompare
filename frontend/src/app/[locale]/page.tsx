@@ -15,9 +15,12 @@ interface SearchBarProps {
   onSelect: (r: SearchResult) => void;
 }
 
+const YEARS = Array.from({ length: 11 }, (_, i) => 2026 - i); // 2026 → 2016
+
 function SearchBar({ market, onSelect }: SearchBarProps) {
   const t           = useTranslations('common');
   const [query,     setQuery]   = useState('');
+  const [year,      setYear]    = useState('');
   const [results,   setResults] = useState<SearchResult[]>([]);
   const [open,      setOpen]    = useState(false);
   const [loading,   setLoading] = useState(false);
@@ -30,7 +33,7 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await searchCars(query, market);
+        const res = await searchCars(query, market, year || undefined);
         setResults(res);
         setOpen(true);
       } finally {
@@ -38,7 +41,7 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
       }
     }, 300);
     return () => clearTimeout(debounceRef.current);
-  }, [query, market]);
+  }, [query, market, year]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -63,37 +66,51 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
 
   return (
     <div ref={containerRef} className="relative mb-5">
-      <div className="relative">
-        {/* Magnifying glass */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+      <div className="flex gap-2">
+        {/* Search input */}
+        <div className="relative flex-1">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onFocus={() => results.length > 0 && setOpen(true)}
+            placeholder={t('searchPlaceholder')}
+            className="w-full bg-white border border-gray-200 rounded-xl pl-11 pr-10 py-3.5 text-sm text-gray-800
+              focus:outline-none focus:border-[#D85A30] focus:ring-1 focus:ring-[#D85A30]/30
+              transition-colors shadow-sm"
+          />
+
+          {/* Spinner / clear */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {loading && (
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-[#D85A30] rounded-full animate-spin" />
+            )}
+            {query && !loading && (
+              <button onClick={clear}
+                className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 text-[10px] font-bold transition-colors">
+                ✕
+              </button>
+            )}
+          </div>
         </div>
 
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder={t('searchPlaceholder')}
-          className="w-full bg-white border border-gray-200 rounded-xl pl-11 pr-10 py-3.5 text-sm text-gray-800
+        {/* Year filter */}
+        <select
+          value={year}
+          onChange={e => setYear(e.target.value)}
+          className="bg-white border border-gray-200 rounded-xl px-3 py-3.5 text-sm text-gray-700
             focus:outline-none focus:border-[#D85A30] focus:ring-1 focus:ring-[#D85A30]/30
-            transition-colors shadow-sm"
-        />
-
-        {/* Spinner / clear button */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {loading && (
-            <div className="w-4 h-4 border-2 border-gray-200 border-t-[#D85A30] rounded-full animate-spin" />
-          )}
-          {query && !loading && (
-            <button onClick={clear}
-              className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 text-[10px] font-bold transition-colors">
-              ✕
-            </button>
-          )}
-        </div>
+            transition-colors shadow-sm cursor-pointer"
+          style={{ minWidth: 100 }}>
+          <option value="">{t('yearAll')}</option>
+          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
       </div>
 
       {/* Dropdown */}

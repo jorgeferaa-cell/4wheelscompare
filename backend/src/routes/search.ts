@@ -8,17 +8,18 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const q      = String(req.query.q ?? '').trim();
     const market = req.query.market as string | undefined;
+    const year   = req.query.year ? parseInt(req.query.year as string) : undefined;
 
     if (q.length < 2) return res.json([]);
 
-    const marketFilter = market
-      ? { market: { in: [market, 'BOTH'] } }
-      : {};
+    const marketFilter = market ? { market: { in: [market, 'BOTH'] } } : {};
+    const yearFilter   = year && !isNaN(year) ? { year } : {};
 
     const versions = await prisma.version.findMany({
       where: {
         AND: [
           marketFilter,
+          yearFilter,
           {
             OR: [
               { model: { make: { name: { contains: q } } } },
@@ -44,7 +45,7 @@ router.get('/', async (req: Request, res: Response) => {
         },
       },
       orderBy: [{ year: 'desc' }, { model: { name: 'asc' } }],
-      take: 8,
+      take: 12,
     });
 
     res.json(

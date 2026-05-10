@@ -8,6 +8,7 @@
     "make": "Marca",
     "model": "Modelo",
     "year": "Ano",
+    "yearAll": "Todos os anos",
     "version": "Versão",
     "addCar": "Adicionar carro",
     "remove": "Remover",

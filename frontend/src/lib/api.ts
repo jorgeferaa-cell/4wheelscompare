@@ -119,11 +119,10 @@ export interface SearchResult {
   fuel_type: string;
 }
 
-export async function searchCars(q: string, market: string): Promise<SearchResult[]> {
-  const res = await fetch(
-    `${API}/api/search?q=${encodeURIComponent(q)}&market=${market}`,
-    { cache: 'no-store' }
-  );
+export async function searchCars(q: string, market: string, year?: string): Promise<SearchResult[]> {
+  const params = new URLSearchParams({ q, market });
+  if (year) params.set('year', year);
+  const res = await fetch(`${API}/api/search?${params}`, { cache: 'no-store' });
   return res.json();
 }
 
