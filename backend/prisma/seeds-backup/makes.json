@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "name": "Chevrolet",
+    "country": "US"
+  },
+  {
+    "id": 2,
+    "name": "Hyundai",
+    "country": "KR"
+  },
+  {
+    "id": 3,
+    "name": "Volkswagen",
+    "country": "DE"
+  },
+  {
+    "id": 4,
+    "name": "Jeep",
+    "country": "US"
+  },
+  {
+    "id": 5,
+    "name": "Toyota",
+    "country": "JP"
+  },
+  {
+    "id": 6,
+    "name": "Honda",
+    "country": "JP"
+  },
+  {
+    "id": 7,
+    "name": "Ford",
+    "country": "US"
+  },
+  {
+    "id": 8,
+    "name": "Tesla",
+    "country": "US"
+  },
+  {
+    "id": 9,
+    "name": "Fiat",
+    "country": null
+  },
+  {
+    "id": 10,
+    "name": "Renault",
+    "country": null
+  },
+  {
+    "id": 11,
+    "name": "Nissan",
+    "country": null
+  },
+  {
+    "id": 12,
+    "name": "Subaru",
+    "country": null
+  },
+  {
+    "id": 13,
+    "name": "Peugeot",
+    "country": null
+  },
+  {
+    "id": 14,
+    "name": "Citroën",
+    "country": null
+  },
+  {
+    "id": 15,
+    "name": "Mitsubishi",
+    "country": null
+  },
+  {
+    "id": 16,
+    "name": "Mazda",
+    "country": null
+  },
+  {
+    "id": 17,
+    "name": "Dodge",
+    "country": null
+  },
+  {
+    "id": 18,
+    "name": "Ram",
+    "country": null
+  },
+  {
+    "id": 19,
+    "name": "BMW",
+    "country": null
+  },
+  {
+    "id": 20,
+    "name": "Mercedes-AMG",
+    "country": null
+  },
+  {
+    "id": 21,
+    "name": "Audi",
+    "country": null
+  },
+  {
+    "id": 22,
+    "name": "Kia",
+    "country": null
+  },
+  {
+    "id": 23,
+    "name": "GMC",
+    "country": null
+  },
+  {
+    "id": 24,
+    "name": "Cadillac",
+    "country": null
+  },
+  {
+    "id": 25,
+    "name": "Buick",
+    "country": null
+  },
+  {
+    "id": 26,
+    "name": "Rivian",
+    "country": null
+  },
+  {
+    "id": 27,
+    "name": "Lucid",
+    "country": null
+  },
+  {
+    "id": 28,
+    "name": "Lincoln",
+    "country": null
+  },
+  {
+    "id": 29,
+    "name": "Acura",
+    "country": null
+  },
+  {
+    "id": 30,
+    "name": "Infiniti",
+    "country": null
+  },
+  {
+    "id": 31,
+    "name": "Lexus",
+    "country": null
+  },
+  {
+    "id": 32,
+    "name": "Porsche",
+    "country": null
+  },
+  {
+    "id": 33,
+    "name": "Volvo",
+    "country": null
+  }
+]
