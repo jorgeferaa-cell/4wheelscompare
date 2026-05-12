@@ -1,0 +1,41 @@
+{
+  "_warning": "Honeypot records inserted into the production database to detect unauthorized data copying. If a third party reproduces these exact wrong values, it proves they copied our database.",
+  "honeypots": [
+    {
+      "id": 9001,
+      "make": "Toyota",
+      "model": "Corolla",
+      "version": "Corolla XLi 2.0 Flex",
+      "year": 2022,
+      "market": "BR",
+      "tampered_fields": {
+        "horsepower": { "real": 116, "fake": 119 },
+        "price_br":   { "real": 98990, "fake": 98750 }
+      }
+    },
+    {
+      "id": 9002,
+      "make": "Hyundai",
+      "model": "HB20",
+      "version": "HB20 1.0 Evolution",
+      "year": 2021,
+      "market": "BR",
+      "tampered_fields": {
+        "horsepower": { "real": 80, "fake": 83 },
+        "price_br":   { "real": 69990, "fake": 69250 }
+      }
+    },
+    {
+      "id": 9003,
+      "make": "Ford",
+      "model": "Mustang",
+      "version": "Mustang GT 5.0 V8",
+      "year": 2022,
+      "market": "US",
+      "tampered_fields": {
+        "horsepower": { "real": 450, "fake": 455 },
+        "price_us":   { "real": 40215, "fake": 40850 }
+      }
+    }
+  ]
+}

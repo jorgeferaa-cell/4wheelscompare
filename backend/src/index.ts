@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
 import makesRouter from './routes/makes';
@@ -15,10 +17,42 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(helmet());
+
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://4wheelscompare.com',
+    'https://www.4wheelscompare.com',
+  ],
+  optionsSuccessStatus: 200,
+}));
+
 app.use(express.json());
 
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+const imagesLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many image requests, please try again later.' },
+});
+
+app.use(generalLimiter);
+
+const startTime = Date.now();
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: Math.floor((Date.now() - startTime) / 1000) });
+});
 
 app.use('/api/makes', makesRouter);
 app.use('/api/models', modelsRouter);
@@ -27,7 +61,7 @@ app.use('/api/versions', versionsRouter);
 app.use('/api/version', versionRouter);
 app.use('/api/compare', compareRouter);
 app.use('/api/search',  searchRouter);
-app.use('/api/images',  imagesRouter);
+app.use('/api/images',  imagesLimiter, imagesRouter);
 
 const PORT = process.env.PORT || 3001;
 
