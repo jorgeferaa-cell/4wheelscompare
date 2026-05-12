@@ -6,6 +6,7 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getCompare, getCarImage, CarDetail } from '@/lib/api';
 import Logo from '@/components/Logo';
+import AdSlot from '@/components/AdSlot';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, Legend, Tooltip,
@@ -574,7 +575,9 @@ function CompareContent() {
       </div>
 
       {/* ── CONTENT ──────────────────────────── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6">
+        <div className="flex gap-6 items-start">
+          <main className="flex-1 min-w-0 space-y-4">
 
         {/* ══ SPECS TAB ════════════════════════ */}
         {tab === 'specs' && (
@@ -1135,7 +1138,16 @@ function CompareContent() {
             ))}
           </div>
         )}
-      </main>
+          </main>
+
+          {/* Sidebar ad — desktop only */}
+          <aside className="hidden xl:block w-[300px] shrink-0">
+            <div className="sticky" style={{ top: 120 }}>
+              <AdSlot size="sidebar" />
+            </div>
+          </aside>
+        </div>
+      </div>
 
       <footer className="text-center text-gray-400 text-xs py-10 mt-4 border-t border-gray-100">
         4wheelscompare.com · {new Date().getFullYear()} · {t('common.footerNote')}

@@ -7,6 +7,7 @@ import CarSelector, { PreselectInfo } from '@/components/CarSelector';
 import Logo from '@/components/Logo';
 import Link from 'next/link';
 import { searchCars, SearchResult } from '@/lib/api';
+import AdSlot from '@/components/AdSlot';
 
 /* ── Search bar ──────────────────────────────────────────── */
 
@@ -121,27 +122,38 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
               {t('searchNoResults')} — &ldquo;{query}&rdquo;
             </div>
           ) : (
-            results.map(r => (
-              <button key={r.id}
-                onClick={() => { onSelect(r); clear(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF8F6] transition-colors border-b border-gray-50 last:border-0 text-left group">
-                <span className="text-xl shrink-0">{catIcon(r.category)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-gray-900">
-                    {r.make}{' '}
-                    <span className="text-gray-600 font-semibold">{r.model}</span>
+            results.flatMap((r, idx) => {
+              const btn = (
+                <button
+                  key={r.id}
+                  onClick={() => { onSelect(r); clear(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF8F6] transition-colors border-b border-gray-50 text-left group">
+                  <span className="text-xl shrink-0">{catIcon(r.category)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-gray-900">
+                      {r.make}{' '}
+                      <span className="text-gray-600 font-semibold">{r.model}</span>
+                    </div>
+                    <div className="text-xs text-gray-400 truncate">{r.version}</div>
                   </div>
-                  <div className="text-xs text-gray-400 truncate">{r.version}</div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <div className="text-xs font-bold text-gray-700">{r.year}</div>
-                  <div className="text-xs font-black" style={{ color: '#D85A30' }}>
-                    {formatPrice(r)}
+                  <div className="shrink-0 text-right">
+                    <div className="text-xs font-bold text-gray-700">{r.year}</div>
+                    <div className="text-xs font-black" style={{ color: '#D85A30' }}>
+                      {formatPrice(r)}
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs text-gray-300 group-hover:text-[#D85A30] transition-colors shrink-0">→</span>
-              </button>
-            ))
+                  <span className="text-xs text-gray-300 group-hover:text-[#D85A30] transition-colors shrink-0">→</span>
+                </button>
+              );
+              if (idx === 2 && results.length > 3) {
+                return [btn, (
+                  <div key="search-ad" className="px-3 py-2 border-b border-gray-50">
+                    <AdSlot size="card" label="Patrocinado" />
+                  </div>
+                )];
+              }
+              return [btn];
+            })
           )}
         </div>
       )}
