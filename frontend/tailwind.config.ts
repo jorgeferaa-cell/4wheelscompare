@@ -17,6 +17,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        condensed: ['var(--font-barlow-condensed)', 'Impact', 'sans-serif'],
       },
     },
   },

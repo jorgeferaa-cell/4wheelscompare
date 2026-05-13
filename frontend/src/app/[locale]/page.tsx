@@ -14,12 +14,14 @@ import AdSlot from '@/components/AdSlot';
 interface SearchBarProps {
   market: string;
   onSelect: (r: SearchResult) => void;
+  variant?: 'light' | 'dark';
 }
 
 const YEARS = Array.from({ length: 11 }, (_, i) => 2026 - i); // 2026 → 2016
 
-function SearchBar({ market, onSelect }: SearchBarProps) {
+function SearchBar({ market, onSelect, variant = 'light' }: SearchBarProps) {
   const t           = useTranslations('common');
+  const dark        = variant === 'dark';
   const [query,     setQuery]   = useState('');
   const [year,      setYear]    = useState('');
   const [results,   setResults] = useState<SearchResult[]>([]);
@@ -82,9 +84,13 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
             onChange={e => setQuery(e.target.value)}
             onFocus={() => results.length > 0 && setOpen(true)}
             placeholder={t('searchPlaceholder')}
-            className="w-full bg-white border border-gray-200 rounded-xl pl-11 pr-10 py-3.5 text-sm text-gray-800
+            className={`w-full border rounded-xl pl-11 pr-10 py-3.5 text-sm
               focus:outline-none focus:border-[#D85A30] focus:ring-1 focus:ring-[#D85A30]/30
-              transition-colors shadow-sm"
+              transition-colors shadow-sm ${
+              dark
+                ? 'bg-[#1A1A1A] border-[#2A2A2A] text-white placeholder:text-gray-500'
+                : 'bg-white border-gray-200 text-gray-800'
+            }`}
           />
 
           {/* Spinner / clear */}
@@ -105,9 +111,13 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
         <select
           value={year}
           onChange={e => setYear(e.target.value)}
-          className="bg-white border border-gray-200 rounded-xl px-3 py-3.5 text-sm text-gray-700
+          className={`border rounded-xl px-3 py-3.5 text-sm
             focus:outline-none focus:border-[#D85A30] focus:ring-1 focus:ring-[#D85A30]/30
-            transition-colors shadow-sm cursor-pointer"
+            transition-colors shadow-sm cursor-pointer ${
+            dark
+              ? 'bg-[#1A1A1A] border-[#2A2A2A] text-gray-300'
+              : 'bg-white border-gray-200 text-gray-700'
+          }`}
           style={{ minWidth: 100 }}>
           <option value="">{t('yearAll')}</option>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -116,9 +126,11 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className={`absolute top-full left-0 right-0 mt-1.5 border rounded-xl shadow-xl z-50 overflow-hidden ${
+          dark ? 'bg-[#1A1A1A] border-[#2A2A2A]' : 'bg-white border-gray-200'
+        }`}>
           {results.length === 0 ? (
-            <div className="px-4 py-4 text-sm text-gray-400 text-center">
+            <div className={`px-4 py-4 text-sm text-center ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
               {t('searchNoResults')} — &ldquo;{query}&rdquo;
             </div>
           ) : (
@@ -127,27 +139,33 @@ function SearchBar({ market, onSelect }: SearchBarProps) {
                 <button
                   key={r.id}
                   onClick={() => { onSelect(r); clear(); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF8F6] transition-colors border-b border-gray-50 text-left group">
+                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-b text-left group ${
+                    dark
+                      ? 'hover:bg-[#D85A30]/10 border-[#2A2A2A]'
+                      : 'hover:bg-[#FFF8F6] border-gray-50'
+                  }`}>
                   <span className="text-xl shrink-0">{catIcon(r.category)}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold text-gray-900">
+                    <div className={`text-sm font-bold ${dark ? 'text-gray-100' : 'text-gray-900'}`}>
                       {r.make}{' '}
-                      <span className="text-gray-600 font-semibold">{r.model}</span>
+                      <span className={`font-semibold ${dark ? 'text-gray-400' : 'text-gray-600'}`}>{r.model}</span>
                     </div>
-                    <div className="text-xs text-gray-400 truncate">{r.version}</div>
+                    <div className={`text-xs truncate ${dark ? 'text-gray-500' : 'text-gray-400'}`}>{r.version}</div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-xs font-bold text-gray-700">{r.year}</div>
+                    <div className={`text-xs font-bold ${dark ? 'text-gray-400' : 'text-gray-700'}`}>{r.year}</div>
                     <div className="text-xs font-black" style={{ color: '#D85A30' }}>
                       {formatPrice(r)}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-300 group-hover:text-[#D85A30] transition-colors shrink-0">→</span>
+                  <span className={`text-xs shrink-0 transition-colors group-hover:text-[#D85A30] ${
+                    dark ? 'text-gray-600' : 'text-gray-300'
+                  }`}>→</span>
                 </button>
               );
               if (idx === 2 && results.length > 3) {
                 return [btn, (
-                  <div key="search-ad" className="px-3 py-2 border-b border-gray-50">
+                  <div key="search-ad" className={`px-3 py-2 border-b ${dark ? 'border-[#2A2A2A]' : 'border-gray-50'}`}>
                     <AdSlot size="card" label="Patrocinado" />
                   </div>
                 )];
@@ -272,45 +290,76 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-12 sm:py-16 text-center">
-          <div className="inline-flex items-center gap-2 bg-[#D85A30]/10 text-[#D85A30] text-xs font-semibold px-3 py-1 rounded-full mb-5">
+      <section
+        className="relative overflow-hidden"
+        style={{
+          backgroundColor: '#0F0F0F',
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      >
+        {/* Orange glow behind title */}
+        <div
+          className="absolute inset-x-0 top-0 flex justify-center pointer-events-none"
+          aria-hidden="true"
+        >
+          <div style={{
+            width: 1000,
+            height: 600,
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(216,90,48,0.18) 0%, transparent 60%)',
+          }} />
+        </div>
+
+        <div className="max-w-3xl mx-auto px-6 py-14 sm:py-20 relative z-10 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-[#D85A30]/15 text-[#D85A30] text-xs font-semibold px-3 py-1 rounded-full border border-[#D85A30]/25 mb-6">
             <span>⚡</span>
             <span>{t('hero.badge')}</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-900 mb-4 leading-tight">
+
+          {/* Title */}
+          <h1
+            className="font-condensed font-black uppercase text-white mb-5 leading-none tracking-tight"
+            style={{ fontSize: 'clamp(3.5rem, 9vw, 7.5rem)' }}
+          >
             {t('hero.heading1')}{' '}
             <span className="text-[#D85A30]">{t('hero.headingHighlight')}</span>
             <br />
             {t('hero.heading2')}
           </h1>
-          <p className="text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
+
+          {/* Subtitle */}
+          <p
+            className="text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed"
+            style={{ color: '#A0A0A0' }}
+          >
             {t('hero.subtext')}
           </p>
+
+          {/* Market toggle */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <span className="text-sm font-semibold text-gray-500 mr-2">{t('common.market')}:</span>
+            {(['BR', 'US'] as const).map(m => (
+              <button key={m} onClick={() => changeMarket(m)}
+                className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  market === m
+                    ? 'bg-[#D85A30] text-white shadow-lg'
+                    : 'bg-[#1A1A1A] text-gray-400 border border-[#2A2A2A] hover:border-[#D85A30]/50 hover:text-[#D85A30]'
+                }`}>
+                <span>{m === 'BR' ? '🇧🇷' : '🇺🇸'}</span>
+                <span>{m === 'BR' ? t('common.br') : t('common.us')}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search bar */}
+          <SearchBar market={market} onSelect={handleSearchSelect} variant="dark" />
         </div>
       </section>
 
       {/* ── MAIN ───────────────────────────────────────────── */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-
-        {/* Market toggle */}
-        <div className="flex items-center gap-2 mb-5">
-          <span className="text-sm font-semibold text-gray-600 mr-2">{t('common.market')}:</span>
-          {(['BR', 'US'] as const).map(m => (
-            <button key={m} onClick={() => changeMarket(m)}
-              className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-                market === m
-                  ? 'bg-[#D85A30] text-white shadow-md'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#D85A30] hover:text-[#D85A30]'
-              }`}>
-              <span>{m === 'BR' ? '🇧🇷' : '🇺🇸'}</span>
-              <span>{m === 'BR' ? t('common.br') : t('common.us')}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Search bar */}
-        <SearchBar market={market} onSelect={handleSearchSelect} />
 
         {/* Car selector grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -361,6 +410,7 @@ export default function HomePage() {
             {canCompare && <span className="ml-1">→</span>}
           </button>
         </div>
+
         {/* Popular comparisons */}
         <section className="mt-10">
           <div className="mb-4">
