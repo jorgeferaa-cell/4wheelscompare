@@ -26,18 +26,18 @@ interface Props {
 }
 
 const SLOT_COLORS = [
-  { border: 'border-t-[#2563EB]', dot: 'bg-[#2563EB]', label: 'text-[#2563EB]', badge: 'bg-[#2563EB]/10 text-[#2563EB]', hex: '#2563EB' },
-  { border: 'border-t-[#059669]', dot: 'bg-[#059669]', label: 'text-[#059669]', badge: 'bg-[#059669]/10 text-[#059669]', hex: '#059669' },
-  { border: 'border-t-[#7C3AED]', dot: 'bg-[#7C3AED]', label: 'text-[#7C3AED]', badge: 'bg-[#7C3AED]/10 text-[#7C3AED]', hex: '#7C3AED' },
-  { border: 'border-t-[#0891B2]', dot: 'bg-[#0891B2]', label: 'text-[#0891B2]', badge: 'bg-[#0891B2]/10 text-[#0891B2]', hex: '#0891B2' },
+  { border: 'border-t-[#2563EB]', dot: 'bg-[#2563EB]', label: 'text-[#2563EB]', badge: 'bg-[#2563EB]/15 text-[#2563EB]', hex: '#2563EB' },
+  { border: 'border-t-[#059669]', dot: 'bg-[#059669]', label: 'text-[#059669]', badge: 'bg-[#059669]/15 text-[#059669]', hex: '#059669' },
+  { border: 'border-t-[#7C3AED]', dot: 'bg-[#7C3AED]', label: 'text-[#7C3AED]', badge: 'bg-[#7C3AED]/15 text-[#7C3AED]', hex: '#7C3AED' },
+  { border: 'border-t-[#0891B2]', dot: 'bg-[#0891B2]', label: 'text-[#0891B2]', badge: 'bg-[#0891B2]/15 text-[#0891B2]', hex: '#0891B2' },
 ];
 
 const SLOT_LETTERS = ['A', 'B', 'C', 'D'];
 
 const selectCls =
-  'w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-800 ' +
-  'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 ' +
-  'disabled:opacity-40 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors';
+  'w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-3 py-2.5 text-sm text-white ' +
+  'focus:outline-none focus:border-[#D85A30] focus:ring-1 focus:ring-[#D85A30]/30 ' +
+  'disabled:opacity-30 disabled:cursor-not-allowed transition-colors';
 
 const catIcon = (category: string) =>
   category === 'pickup' ? '🚛' : category === 'suv' ? '🚙' : '🚗';
@@ -133,15 +133,15 @@ export default function CarSelector({
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 border-t-4 ${c.border} overflow-hidden flex flex-col`}>
+    <div className={`bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] border-t-4 ${c.border} overflow-hidden flex flex-col`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-50">
-        <span className={`text-xs font-bold uppercase tracking-widest ${c.label} flex items-center gap-1.5`}>
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[#2A2A2A]">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#D85A30] flex items-center gap-1.5">
           {isComplete && <span className={`w-2 h-2 rounded-full ${c.dot}`} />}
           {t('carLabel')} {SLOT_LETTERS[index]}
         </span>
         {canRemove && (
-          <button onClick={onRemove} className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+          <button onClick={onRemove} className="text-xs text-gray-500 hover:text-red-500 transition-colors">
             {t('remove')}
           </button>
         )}
@@ -163,27 +163,27 @@ export default function CarSelector({
               <div className={`text-[10px] font-black uppercase tracking-widest ${c.label} mb-0.5`}>
                 {preselect.make}
               </div>
-              <div className="text-sm font-bold text-gray-900 leading-tight">
+              <div className="text-sm font-bold text-white leading-tight">
                 {preselect.model}
               </div>
-              <div className="text-[11px] text-gray-400 truncate mt-0.5">
+              <div className="text-[11px] text-gray-500 truncate mt-0.5">
                 {preselect.version}
               </div>
             </div>
           </div>
 
           {score && (
-            <div className="flex items-center justify-between bg-gray-50 rounded-lg px-2 py-1.5">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">4W Score</span>
+            <div className="flex items-center justify-between bg-[#222222] rounded-lg px-2 py-1.5">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">4W Score</span>
               <span className="text-sm font-black" style={{ color: '#D85A30' }}>
-                {score.score4w}<span className="text-[10px] font-normal text-gray-400"> /10</span>
+                {score.score4w}<span className="text-[10px] font-normal text-gray-500"> /10</span>
               </span>
             </div>
           )}
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-bold bg-[#2A2A2A] text-gray-400 px-1.5 py-0.5 rounded-full">
                 {preselect.year}
               </span>
               <span className="text-xs font-black" style={{ color: '#D85A30' }}>
@@ -192,7 +192,7 @@ export default function CarSelector({
             </div>
             <button
               onClick={onClearPreselect}
-              className="text-xs text-gray-400 hover:text-[#D85A30] transition-colors font-medium">
+              className="text-xs text-gray-500 hover:text-[#D85A30] transition-colors font-medium">
               ↺ {t('change')}
             </button>
           </div>
@@ -223,7 +223,7 @@ export default function CarSelector({
 
       {/* Status bar */}
       <div className={`mx-4 mb-4 rounded-lg px-3 py-2 text-xs font-medium text-center transition-all ${
-        isComplete ? c.badge : 'bg-gray-50 text-gray-400'
+        isComplete ? c.badge : 'bg-[#111111] text-gray-500'
       }`}>
         {isComplete
           ? score

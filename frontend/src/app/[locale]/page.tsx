@@ -263,14 +263,14 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen bg-[#0F0F0F]">
 
       {/* ── NAVBAR ─────────────────────────────────────────── */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+      <header className="bg-[#0A0A0A] border-b border-[#1A1A1A] sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo size="md" />
-            <span className="hidden sm:inline text-xs text-gray-400 border-l border-gray-200 pl-3">
+            <span className="hidden sm:inline text-xs text-gray-500 border-l border-[#2A2A2A] pl-3">
               {t('common.subtitle')}
             </span>
           </div>
@@ -280,7 +280,7 @@ export default function HomePage() {
                 className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
                   locale === loc
                     ? 'bg-[#D85A30] text-white'
-                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
+                    : 'text-gray-500 hover:text-white hover:bg-[#1A1A1A]'
                 }`}>
                 {loc.toUpperCase()}
               </Link>
@@ -378,7 +378,7 @@ export default function HomePage() {
 
           {slotCount < 4 && (
             <button onClick={addSlot}
-              className="flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-200 hover:border-brand/50 hover:bg-brand/5 transition-all py-12 text-gray-400 hover:text-brand group min-h-[200px]">
+              className="flex flex-col items-center justify-center gap-2 bg-[#141414] rounded-xl border-2 border-dashed border-[#2A2A2A] hover:border-[#D85A30]/40 hover:bg-[#D85A30]/5 transition-all py-12 text-gray-500 hover:text-[#D85A30] group min-h-[200px]">
               <span className="w-10 h-10 rounded-full border-2 border-current flex items-center justify-center text-xl font-light group-hover:scale-110 transition-transform">
                 +
               </span>
@@ -388,54 +388,54 @@ export default function HomePage() {
         </div>
 
         {/* Compare CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl px-6 py-5 border border-gray-100 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#1A1A1A] rounded-xl px-6 py-5 border border-[#2A2A2A]">
           <div>
             {canCompare ? (
-              <p className="text-sm font-semibold text-gray-700">
+              <p className="text-sm font-semibold text-gray-200">
                 {t('compare.statusReady', { count: validIds.length })}
               </p>
             ) : (
-              <p className="text-sm text-gray-400">{t('compare.statusMin')}</p>
+              <p className="text-sm text-gray-500">{t('compare.statusMin')}</p>
             )}
-            <p className="text-xs text-gray-400 mt-0.5">{t('compare.statusSubtext')}</p>
+            <p className="text-xs text-gray-600 mt-0.5">{t('compare.statusSubtext')}</p>
           </div>
           <button onClick={handleCompare} disabled={!canCompare}
-            className={`flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2.5 px-10 py-4 rounded-xl font-black text-base tracking-wide transition-all whitespace-nowrap ${
               canCompare
-                ? 'bg-[#D85A30] text-white hover:opacity-90 shadow-lg active:scale-95'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#D85A30] text-white hover:opacity-90 shadow-[0_0_24px_rgba(216,90,48,0.35)] active:scale-95'
+                : 'bg-[#2A2A2A] text-gray-600 cursor-not-allowed'
             }`}>
             {t('common.compareBtn')}
-            {canCompare && <span className="text-xs opacity-80">({validIds.length})</span>}
-            {canCompare && <span className="ml-1">→</span>}
+            {canCompare && <span className="text-sm opacity-80">({validIds.length})</span>}
+            {canCompare && <span className="ml-0.5">→</span>}
           </button>
         </div>
 
         {/* Popular comparisons */}
         <section className="mt-10">
           <div className="mb-4">
-            <h2 className="text-base font-black text-gray-900">{t('home.popularTitle')}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{t('home.popularSubtitle')}</p>
+            <h2 className="text-base font-black text-white">{t('home.popularTitle')}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{t('home.popularSubtitle')}</p>
           </div>
 
           {/* BR */}
           <div className="mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5 mb-2">
               🇧🇷 Brasil
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {BR_POPULAR.map(c => (
                 <button key={c.ids} onClick={() => router.push(`/${locale}/compare?ids=${c.ids}`)}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 text-left hover:border-[#D85A30]/40 hover:bg-[#FFF8F6] transition-all group">
+                  className="bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] px-4 py-3 text-left hover:border-[#D85A30]/40 hover:bg-[#D85A30]/5 transition-all group">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-lg">{c.icon1}</span>
-                    <span className="text-xs text-gray-300 font-bold">vs</span>
+                    <span className="text-xs text-gray-600 font-bold">vs</span>
                     <span className="text-lg">{c.icon2}</span>
                   </div>
-                  <div className="text-sm font-bold text-gray-900 leading-tight group-hover:text-[#D85A30] transition-colors">
+                  <div className="text-sm font-bold text-white leading-tight group-hover:text-[#D85A30] transition-colors">
                     {c.label}
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-0.5 font-medium">{c.badge}</div>
+                  <div className="text-[10px] text-gray-500 mt-0.5 font-medium">{c.badge}</div>
                 </button>
               ))}
             </div>
@@ -443,22 +443,22 @@ export default function HomePage() {
 
           {/* US */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5 mb-2">
               🇺🇸 United States
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {US_POPULAR.map(c => (
                 <button key={c.ids} onClick={() => router.push(`/${locale}/compare?ids=${c.ids}`)}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 text-left hover:border-[#D85A30]/40 hover:bg-[#FFF8F6] transition-all group">
+                  className="bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] px-4 py-3 text-left hover:border-[#D85A30]/40 hover:bg-[#D85A30]/5 transition-all group">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-lg">{c.icon1}</span>
-                    <span className="text-xs text-gray-300 font-bold">vs</span>
+                    <span className="text-xs text-gray-600 font-bold">vs</span>
                     <span className="text-lg">{c.icon2}</span>
                   </div>
-                  <div className="text-sm font-bold text-gray-900 leading-tight group-hover:text-[#D85A30] transition-colors">
+                  <div className="text-sm font-bold text-white leading-tight group-hover:text-[#D85A30] transition-colors">
                     {c.label}
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-0.5 font-medium">{c.badge}</div>
+                  <div className="text-[10px] text-gray-500 mt-0.5 font-medium">{c.badge}</div>
                 </button>
               ))}
             </div>
@@ -467,7 +467,7 @@ export default function HomePage() {
 
       </main>
 
-      <footer className="text-center text-gray-400 text-xs py-10 mt-4 border-t border-gray-100">
+      <footer className="text-center text-gray-600 text-xs py-10 mt-4 border-t border-[#1A1A1A]">
         4wheelscompare.com · {new Date().getFullYear()} · {t('common.footerNote')}
       </footer>
     </div>
