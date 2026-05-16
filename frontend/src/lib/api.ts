@@ -126,6 +126,14 @@ export async function searchCars(q: string, market: string, year?: string): Prom
   return res.json();
 }
 
+export interface CarImageGallery {
+  front:    string | null;
+  side:     string | null;
+  rear:     string | null;
+  interior: string | null;
+  imageUrl: string | null;
+}
+
 export async function getCarImage(make: string, model: string, year: number): Promise<string | null> {
   const res = await fetch(
     `${API}/api/images?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`,
@@ -133,4 +141,12 @@ export async function getCarImage(make: string, model: string, year: number): Pr
   );
   const data = await res.json() as { imageUrl: string | null };
   return data.imageUrl;
+}
+
+export async function getCarGallery(make: string, model: string, year: number): Promise<CarImageGallery> {
+  const res = await fetch(
+    `${API}/api/images?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`,
+    { cache: 'no-store' }
+  );
+  return res.json() as Promise<CarImageGallery>;
 }
