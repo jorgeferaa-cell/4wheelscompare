@@ -150,3 +150,15 @@ export async function getCarGallery(make: string, model: string, year: number): 
   );
   return res.json() as Promise<CarImageGallery>;
 }
+
+export type FipeData =
+  | { found: true; fipeCode: string; price: string; priceNumber: number; reference: string; fuel: string }
+  | { found: false };
+
+export async function getFipe(make: string, model: string, year: number): Promise<FipeData> {
+  const res = await fetch(
+    `${API}/api/fipe?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`,
+    { cache: 'no-store' }
+  );
+  return res.json() as Promise<FipeData>;
+}

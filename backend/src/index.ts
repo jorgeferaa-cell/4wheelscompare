@@ -12,6 +12,7 @@ import versionRouter from './routes/version';
 import compareRouter from './routes/compare';
 import searchRouter from './routes/search';
 import imagesRouter from './routes/images';
+import fipeRouter   from './routes/fipe';
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ app.use('/api/version', versionRouter);
 app.use('/api/compare', compareRouter);
 app.use('/api/search',  searchRouter);
 app.use('/api/images',  imagesLimiter, imagesRouter);
+app.use('/api/fipe',   fipeRouter);
 
 const PORT = process.env.PORT || 3001;
 
