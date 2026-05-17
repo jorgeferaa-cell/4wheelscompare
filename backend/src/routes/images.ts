@@ -11,12 +11,8 @@ interface Gallery {
 
 const cache = new Map<string, Gallery>();
 
-const OLD_YEARS = [
-  '1960','1961','1962','1963','1964','1965','1966','1967','1968','1969',
-  '1970','1971','1972','1973','1974','1975','1976','1977','1978','1979',
-  '1980','1981','1982','1983','1984','1985','1986','1987','1988','1989',
-  '1990','1991','1992','1993','1994','1995','1996','1997','1998','1999',
-];
+// 1900-1989: always bad — no car in the DB predates 1990
+const OLD_YEARS = Array.from({ length: 90 }, (_, i) => String(1900 + i));
 
 const ALWAYS_EXCLUDE = [
   ...OLD_YEARS,
@@ -25,6 +21,11 @@ const ALWAYS_EXCLUDE = [
   'engine', 'wheel', 'tire', 'rim',
   'badge', 'logo', 'emblem', 'icon', 'chart', 'diagram', 'map',
   'police', 'taxi', 'crash', 'accident', 'wrecked',
+  'topolino', 'nuova', 'classico', 'storico', 'oldtimer', 'veteran', 'antique',
+  'prototype', 'concept', 'autoshow', 'motorshow', 'salon', 'messe',
+  '1940s', '1950s', '1960s', '1970s', '1980s', '1990s',
+  'mk1', 'mk2', 'mk3', 'mk4', 'mk5', 'serie1', 'serie2',
+  'museum', 'museu', 'collection', 'restoration',
 ];
 
 const EXTERIOR_EXCLUDE = [
@@ -40,13 +41,42 @@ const INTERIOR_EXCLUDE = [
 
 const IMAGE_EXTENSIONS = /\.(jpe?g|png|gif|webp|tiff?)$/i;
 
-function isBadTitle(title: string, keywords: string[]): boolean {
+// Extracts 4-digit years in range 1900-2099 from a lowercased title string.
+// Uses negative digit lookarounds instead of \b so years like "ene2015" are caught.
+function extractYears(lower: string): number[] {
+  const matches = [...lower.matchAll(/(?<!\d)(19\d{2}|20\d{2})(?!\d)/g)];
+  return matches.map(m => parseInt(m[1]));
+}
+
+// Returns true if the title should be rejected
+function isBadTitle(title: string, keywords: string[], requestedYear: number): boolean {
   const lower = title.toLowerCase();
   if (!IMAGE_EXTENSIONS.test(lower)) return true;
+  // Dynamic check: 1990+ years that are more than 6 years behind requestedYear are rejected
+  for (const y of extractYears(lower)) {
+    if (y >= 1990 && requestedYear - y > 6) return true;
+  }
   return keywords.some(kw => lower.includes(kw));
 }
 
-async function searchQuery(query: string, badKeywords: string[]): Promise<string | null> {
+// Score a title by how close its embedded years are to requestedYear
+function scoreTitle(title: string, requestedYear: number): number {
+  const lower = title.toLowerCase();
+  let score = 0;
+  for (const y of extractYears(lower)) {
+    if (y === requestedYear)                   score += 3;
+    else if (Math.abs(y - requestedYear) === 1) score += 2;
+    else if (y === requestedYear - 2)           score += 1;
+    else if (y < requestedYear - 6)             score -= 2;
+  }
+  return score;
+}
+
+async function searchQuery(
+  query: string,
+  badKeywords: string[],
+  requestedYear: number,
+): Promise<string | null> {
   const searchUrl =
     `https://commons.wikimedia.org/w/api.php?action=query&list=search` +
     `&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=30&format=json`;
@@ -60,12 +90,19 @@ async function searchQuery(query: string, badKeywords: string[]): Promise<string
     query?: { search?: Array<{ title: string }> };
   };
 
-  const hits = (searchData.query?.search ?? []).filter(h => !isBadTitle(h.title, badKeywords));
+  const hits = (searchData.query?.search ?? [])
+    .filter(h => !isBadTitle(h.title, badKeywords, requestedYear));
   if (hits.length === 0) return null;
 
-  const candidates = hits.slice(0, 5);
-  const titleList  = candidates.map(h => h.title).join('|');
-  const infoUrl    =
+  // Score, sort descending, keep best 5 for imageinfo lookup
+  const candidates = hits
+    .slice(0, 10)
+    .map(h => ({ title: h.title, score: scoreTitle(h.title, requestedYear) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  const titleList = candidates.map(c => c.title).join('|');
+  const infoUrl =
     `https://commons.wikimedia.org/w/api.php?action=query` +
     `&titles=${encodeURIComponent(titleList)}&prop=imageinfo&iiprop=url&format=json`;
 
@@ -79,7 +116,8 @@ async function searchQuery(query: string, badKeywords: string[]): Promise<string
   };
 
   const pages = infoData.query?.pages ?? {};
-  for (const title of candidates.map(h => h.title)) {
+  // Return URL of the highest-scoring title that has a valid imageinfo
+  for (const { title } of candidates) {
     const page = Object.values(pages).find(p => p.title === title);
     const url  = page?.imageinfo?.[0]?.url;
     if (url) return url;
@@ -87,9 +125,13 @@ async function searchQuery(query: string, badKeywords: string[]): Promise<string
   return null;
 }
 
-async function fetchForAngle(queries: string[], badKeywords: string[]): Promise<string | null> {
+async function fetchForAngle(
+  queries: string[],
+  badKeywords: string[],
+  requestedYear: number,
+): Promise<string | null> {
   for (const query of queries) {
-    const url = await searchQuery(query, badKeywords);
+    const url = await searchQuery(query, badKeywords, requestedYear);
     if (url) return url;
   }
   return null;
@@ -120,14 +162,26 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const angles = [
-      { queries: [`${make} ${model} ${yearNum} front exterior`, `${make} ${model} front`], excludes: EXTERIOR_EXCLUDE },
-      { queries: [`${make} ${model} ${yearNum} side profile`,   `${make} ${model} side`],  excludes: EXTERIOR_EXCLUDE },
-      { queries: [`${make} ${model} ${yearNum} rear back`,      `${make} ${model} rear`],  excludes: EXTERIOR_EXCLUDE },
-      { queries: [`${make} ${model} ${yearNum} interior dashboard`, `${make} ${model} interior inside`], excludes: INTERIOR_EXCLUDE },
+      {
+        queries:  [`${yearNum} ${make} ${model} front`, `${make} ${model} ${yearNum}`],
+        excludes: EXTERIOR_EXCLUDE,
+      },
+      {
+        queries:  [`${yearNum} ${make} ${model} side`, `${make} ${model} ${yearNum} side`],
+        excludes: EXTERIOR_EXCLUDE,
+      },
+      {
+        queries:  [`${yearNum} ${make} ${model} rear`, `${make} ${model} ${yearNum} rear`],
+        excludes: EXTERIOR_EXCLUDE,
+      },
+      {
+        queries:  [`${yearNum} ${make} ${model} interior`, `${make} ${model} ${yearNum} interior`],
+        excludes: INTERIOR_EXCLUDE,
+      },
     ];
 
     const [front, side, rear, interior] = await Promise.all(
-      angles.map(a => fetchForAngle(a.queries, a.excludes))
+      angles.map(a => fetchForAngle(a.queries, a.excludes, yearNum))
     );
 
     const gallery: Gallery = { front, side, rear, interior };
