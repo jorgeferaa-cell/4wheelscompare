@@ -281,6 +281,7 @@ export default function CompareContent() {
   const [animating, setAnimating] = useState(false);
   const [barWidths, setBarWidths] = useState<number[]>([]);
   const [pilotPhase, setPilotPhase] = useState<'idle'|'walking'|'racing'|'finished'>('idle');
+  const [carsReady,  setCarsReady]  = useState(false);
 
   const PERF_ROWS = [
     { key: 'horsepower',       label: t('compare.specHorsepower'), convertType: 'power'       as ConvertType, lowerIsBetter: false },
@@ -374,9 +375,11 @@ export default function CompareContent() {
     const snapshot = { cars, mode, tripDist };
     setSimulated(false);
     setBarWidths(cars.map(() => 0));
+    setCarsReady(false);
     setAnimating(true);
     setPilotPhase('walking');
     setTimeout(() => {
+      setCarsReady(true);
       setPilotPhase('racing');
       setTimeout(() => {
         const times = getTimes(snapshot.cars, snapshot.mode, snapshot.tripDist);
@@ -1096,9 +1099,9 @@ export default function CompareContent() {
                             }}>
                             <div className="absolute left-0 top-0 h-full"
                               style={{
-                                width: `${pct}%`,
+                                width: carsReady ? `${pct}%` : '0%',
                                 background: `linear-gradient(90deg,${SLOT_COLORS[i]}60,${SLOT_COLORS[i]}a8)`,
-                                transition: 'width 1.4s cubic-bezier(0.25,0.46,0.45,0.94)',
+                                transition: carsReady ? 'width 1.4s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none',
                                 borderRight: `2px solid ${SLOT_COLORS[i]}`,
                               }} />
                             <div className="absolute left-0 top-0 w-3 h-full z-10 opacity-60"
@@ -1136,9 +1139,9 @@ export default function CompareContent() {
 
                           <div className={`absolute top-1/2 text-xl z-20 select-none pointer-events-none ${isWinner ? '_winCar' : ''}`}
                             style={{
-                              left: `${Math.max(3, pct)}%`,
+                              left: carsReady ? `${Math.max(3, pct)}%` : '3%',
                               transform: 'translate(-50%,-50%) scaleX(-1)',
-                              transition: 'left 1.4s cubic-bezier(0.25,0.46,0.45,0.94)',
+                              transition: carsReady ? 'left 1.4s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none',
                             }}>
                             🚗
                           </div>
