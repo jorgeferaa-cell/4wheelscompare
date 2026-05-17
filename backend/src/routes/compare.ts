@@ -8,7 +8,11 @@ const router = Router();
 // GET /api/compare?ids=1,2,3,4
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const idsParam = req.query.ids as string;
+    // ids may arrive as "1,2,3" (single param) or ["1","2","3"] (repeated params)
+    const raw = req.query.ids;
+    const idsParam: string = Array.isArray(raw)
+      ? (raw as string[]).join(',')
+      : typeof raw === 'string' ? raw : '';
 
     if (!idsParam) {
       return res.status(400).json({ error: 'ids parameter required' });
@@ -63,7 +67,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json(results);
   } catch (err) {
-    console.error(err);
+    console.error('[compare] Error:', err instanceof Error ? err.stack : err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

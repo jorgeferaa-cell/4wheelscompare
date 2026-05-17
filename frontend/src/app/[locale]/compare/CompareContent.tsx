@@ -325,13 +325,23 @@ export default function CompareContent() {
 
   useEffect(() => {
     if (!idsParam) return;
-    getCompare(idsParam.split(',').map(Number).filter(Boolean)).then(data => {
-      setCars(data);
-      setLoading(false);
-      Promise.all(
-        data.map(car => getCarImage(car.model.make.name, car.model.name, car.year))
-      ).then(setImages);
-    });
+    getCompare(idsParam.split(',').map(Number).filter(Boolean))
+      .then(data => {
+        if (!Array.isArray(data)) {
+          console.error('[compare] unexpected API response:', data);
+          setLoading(false);
+          return;
+        }
+        setCars(data);
+        setLoading(false);
+        Promise.all(
+          data.map(car => getCarImage(car.model.make.name, car.model.name, car.year))
+        ).then(setImages);
+      })
+      .catch(err => {
+        console.error('[compare] fetch error:', err);
+        setLoading(false);
+      });
   }, [idsParam]);
 
   const getTimes = (c: CarDetail[], m: RaceMode, d: number): number[] =>
