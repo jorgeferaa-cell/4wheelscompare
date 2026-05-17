@@ -33,6 +33,22 @@ const CONFETTI = [
   { ox:  18, oy:  4, tx:  36, ty:  46, rot: 320, delay: 0.09, color: '#0891B2' },
 ];
 
+const FLOWERS = [
+  { ox: -28, delay: 0    },
+  { ox: -20, delay: 0.06 },
+  { ox: -12, delay: 0.11 },
+  { ox:  -4, delay: 0.04 },
+  { ox:   4, delay: 0.09 },
+  { ox:  12, delay: 0.14 },
+  { ox:  20, delay: 0.02 },
+  { ox:  28, delay: 0.07 },
+  { ox: -24, delay: 0.13 },
+  { ox:  -8, delay: 0.05 },
+  { ox:   8, delay: 0.10 },
+  { ox:  24, delay: 0.08 },
+];
+const FLOWER_COLORS = ['#D85A30','#FFD700','#059669','#2563EB','#7C3AED','#0891B2','#f472b6','#34d399','#fb923c','#60a5fa','#a78bfa','#fcd34d'];
+
 function computeTrip(car: CarDetail, distKm: number) {
   const cruise       = Math.min(car.top_speed_kmh * 0.7, 130);
   const rangeKm      = (car.tank_liters / car.fuel_consumption) * 100;
@@ -247,132 +263,6 @@ function convertUnits(value: number, type: ConvertType, locale: string): { value
   }
 }
 
-/* ── Pilot entry animation overlay ──────────────────────────── */
-
-interface PilotEntryProps { cars: CarDetail[]; locale: string }
-
-function PilotEntry({ cars, locale }: PilotEntryProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-      <style>{`
-        @keyframes _pwalk {
-          from { transform: translateX(-160px); opacity: 0; }
-          18%  { opacity: 1; }
-          to   { transform: translateX(0);      opacity: 1; }
-        }
-        @keyframes _psit {
-          from { transform: translate(0,0);        opacity: 1; }
-          to   { transform: translate(16px,12px);  opacity: 0; }
-        }
-        @keyframes _dopen {
-          from { transform: rotate(0deg);   }
-          to   { transform: rotate(-48deg); }
-        }
-        @keyframes _dclose {
-          from { transform: rotate(-48deg); }
-          to   { transform: rotate(0deg);   }
-        }
-        @keyframes _carpulse {
-          0%,100% { opacity: 0.55; }
-          50%     { opacity: 0.85; }
-        }
-      `}</style>
-
-      <div className="flex flex-wrap gap-8 justify-center px-6 mb-8">
-        {cars.map((car, i) => (
-          <div key={car.id} className="flex flex-col items-center gap-3">
-            {/* Car label */}
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: SLOT_COLORS[i] }} />
-              <span className="text-xs font-bold text-white">
-                {car.model.make.name} {car.model.name}
-              </span>
-            </div>
-
-            {/* SVG scene */}
-            <svg width="200" height="110" viewBox="0 0 200 110" overflow="hidden">
-
-              {/* ── Car body ── */}
-              <g style={{ animation: '_carpulse 0.55s ease-in-out 1.85s 2 forwards' }}>
-                {/* Main body */}
-                <rect x="8" y="54" width="172" height="38" rx="10"
-                  fill={SLOT_COLORS[i]} fillOpacity="0.55" />
-                {/* Roof */}
-                <path d="M44,54 L60,27 L148,27 L164,54 Z"
-                  fill={SLOT_COLORS[i]} fillOpacity="0.45" />
-                {/* Window glazing */}
-                <path d="M67,53 L76,31 L144,31 L155,53 Z"
-                  fill="rgba(180,225,255,0.2)" />
-                {/* Wheel rear */}
-                <circle cx="42"  cy="91" r="17" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
-                <circle cx="42"  cy="91" r="9"  fill="white"          fillOpacity="0.9"  />
-                <circle cx="42"  cy="91" r="3.5" fill={SLOT_COLORS[i]} fillOpacity="0.55" />
-                {/* Wheel front */}
-                <circle cx="158" cy="91" r="17" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
-                <circle cx="158" cy="91" r="9"  fill="white"          fillOpacity="0.9"  />
-                <circle cx="158" cy="91" r="3.5" fill={SLOT_COLORS[i]} fillOpacity="0.55" />
-                {/* Headlight */}
-                <ellipse cx="176" cy="67" rx="4" ry="3"
-                  fill="rgba(255,255,200,0.65)" />
-                {/* Tail light */}
-                <ellipse cx="12" cy="67" rx="4" ry="3"
-                  fill="rgba(255,80,80,0.55)" />
-              </g>
-
-              {/* ── Driver door (hinge at top-left corner: SVG 80,56) ── */}
-              <g style={{
-                transformBox: 'fill-box',
-                transformOrigin: '0% 0%',
-                animation: '_dopen 0.28s ease-out 0.82s forwards, _dclose 0.28s ease-in 1.62s forwards',
-              }}>
-                <rect x="80" y="56" width="30" height="32" rx="2"
-                  fill="transparent" stroke="white" strokeWidth="1.2" strokeOpacity="0.6" />
-                {/* Door handle */}
-                <line x1="104" y1="70" x2="104" y2="76"
-                  stroke="white" strokeWidth="1.5" strokeOpacity="0.6"
-                  strokeLinecap="round" />
-              </g>
-
-              {/* ── Pilot (drawn at resting position x=76; walkIn from x≈-84) ── */}
-              <g style={{ animation: '_pwalk 0.82s ease-out forwards' }}>
-                {/* inner group: sit-down fade, delayed until after walk */}
-                <g style={{
-                  animation: '_psit 0.38s ease-in 1.18s forwards',
-                }}>
-                  {/* Head */}
-                  <circle cx="76" cy="27" r="6"   fill="white" fillOpacity="0.95" />
-                  {/* Helmet visor */}
-                  <path d="M70,27 A6,6 0 0,1 82,27"
-                    fill={SLOT_COLORS[i]} fillOpacity="0.65" />
-                  {/* Body */}
-                  <line x1="76" y1="33" x2="76" y2="48"
-                    stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Arms */}
-                  <line x1="76" y1="37" x2="67" y2="44"
-                    stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="76" y1="37" x2="85" y2="44"
-                    stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  {/* Legs */}
-                  <line x1="76" y1="48" x2="70" y2="60"
-                    stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="76" y1="48" x2="82" y2="60"
-                    stroke="white" strokeWidth="2" strokeLinecap="round" />
-                </g>
-              </g>
-
-            </svg>
-          </div>
-        ))}
-      </div>
-
-      <p className="text-sm font-semibold text-gray-300 tracking-wide animate-pulse">
-        {locale === 'pt' ? 'Preparando para a corrida…' : 'Getting ready to race…'}
-      </p>
-    </div>
-  );
-}
-
 export default function CompareContent() {
   const t            = useTranslations();
   const searchParams = useSearchParams();
@@ -390,7 +280,7 @@ export default function CompareContent() {
   const [simulated, setSimulated] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [barWidths, setBarWidths] = useState<number[]>([]);
-  const [showPilot,  setShowPilot]  = useState(false);
+  const [pilotPhase, setPilotPhase] = useState<'idle'|'walking'|'racing'|'finished'>('idle');
 
   const PERF_ROWS = [
     { key: 'horsepower',       label: t('compare.specHorsepower'), convertType: 'power'       as ConvertType, lowerIsBetter: false },
@@ -484,10 +374,10 @@ export default function CompareContent() {
     const snapshot = { cars, mode, tripDist };
     setSimulated(false);
     setBarWidths(cars.map(() => 0));
-    setShowPilot(true);
+    setAnimating(true);
+    setPilotPhase('walking');
     setTimeout(() => {
-      setShowPilot(false);
-      setAnimating(true);
+      setPilotPhase('racing');
       setTimeout(() => {
         const times = getTimes(snapshot.cars, snapshot.mode, snapshot.tripDist);
         const minT  = Math.min(...times);
@@ -495,7 +385,8 @@ export default function CompareContent() {
         setSimulated(true);
         setAnimating(false);
       }, 120);
-    }, 2500);
+      setTimeout(() => setPilotPhase('finished'), 1600);
+    }, 1800);
   };
 
   const winnerIdx = (() => {
@@ -1088,11 +979,8 @@ export default function CompareContent() {
               </button>
             </div>
 
-            {/* Pilot entry animation overlay */}
-            {showPilot && <PilotEntry cars={cars} locale={locale} />}
-
             {/* Race track */}
-            {(simulated || animating) && (
+            {(simulated || animating || pilotPhase !== 'idle') && (
               <div className="bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] p-5">
                 <style>{`
                   @keyframes _carPulse {
@@ -1104,11 +992,35 @@ export default function CompareContent() {
                     85%  { opacity:.7; }
                     100% { transform: translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(.35); opacity:0; }
                   }
+                  @keyframes _pilotWalkIn {
+                    0%   { transform: translateY(-50%) translateX(-50px); opacity:0; }
+                    12%  { transform: translateY(-50%) translateX(-30px); opacity:1; }
+                    82%  { transform: translateY(-50%) translateX(0);     opacity:1; }
+                    100% { transform: translateY(-50%) translateX(0);     opacity:0; }
+                  }
+                  @keyframes _pilotCelebWalk {
+                    0%   { transform: translateX(0); }
+                    40%  { transform: translateX(-8px) translateY(-3px); }
+                    100% { transform: translateX(-14px); }
+                  }
+                  @keyframes _flowerFall {
+                    0%   { transform: translateY(-25px); opacity:1; }
+                    100% { transform: translateY(50px);  opacity:0; }
+                  }
                   ._winCar  { animation: _carPulse .75s ease-in-out infinite; }
                   ._confbit {
                     position:absolute; width:8px; height:8px; border-radius:2px;
                     animation: _confettiBurst 1.3s ease-out forwards;
                     pointer-events:none; z-index:40;
+                  }
+                  ._walkPilot {
+                    position:absolute; top:50%; left:14px; z-index:22; pointer-events:none;
+                    animation: _pilotWalkIn 1.8s ease-out forwards;
+                  }
+                  ._flower {
+                    position:absolute; width:7px; height:7px; border-radius:50%;
+                    animation: _flowerFall 1.2s ease-in forwards;
+                    pointer-events:none; z-index:35;
                   }
                 `}</style>
 
@@ -1125,9 +1037,10 @@ export default function CompareContent() {
                     let timeLabel: string, speedLabel: string, fuelLabel = '';
 
                     if (mode !== 'trip') {
-                      const sim = mode === '201m' ? car.simulation.sprint_201m
-                                : mode === '400m' ? car.simulation.sprint_400m
-                                :                   car.simulation.sprint_800m;
+                      const sim = mode === '201m'  ? car.simulation.sprint_201m
+                                : mode === '400m'  ? car.simulation.sprint_400m
+                                : mode === '1000m' ? car.simulation.sprint_1000m
+                                :                    car.simulation.sprint_800m;
                       timeLabel  = `${sim.time_seconds.toFixed(2)}s`;
                       const spd  = convertUnits(sim.final_speed_kmh, 'speed', locale);
                       speedLabel = `${Math.round(spd.value)} ${spd.unit}`;
@@ -1184,6 +1097,20 @@ export default function CompareContent() {
                               style={{ backgroundImage: 'repeating-linear-gradient(180deg,#fff 0,#fff 5px,#000 5px,#000 10px)' }} />
                           </div>
 
+                          {pilotPhase === 'walking' && (
+                            <div className="_walkPilot">
+                              <svg width="18" height="36" viewBox="0 0 18 36" style={{ transform: 'translateY(-50%)' }}>
+                                <circle cx="9" cy="5" r="4" fill="white" fillOpacity="0.95" />
+                                <path d={`M5,5 A4,4 0 0,1 13,5`} fill={SLOT_COLORS[i]} fillOpacity="0.75" />
+                                <line x1="9" y1="9"  x2="9"  y2="22" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+                                <line x1="9" y1="14" x2="4"  y2="19" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                <line x1="9" y1="14" x2="14" y2="19" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                <line x1="9" y1="22" x2="5"  y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                <line x1="9" y1="22" x2="13" y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          )}
+
                           <div className={`absolute top-1/2 text-xl z-20 select-none pointer-events-none ${isWinner ? '_winCar' : ''}`}
                             style={{
                               left: `${Math.max(3, pct)}%`,
@@ -1206,6 +1133,34 @@ export default function CompareContent() {
                               } as React.CSSProperties}
                             />
                           ))}
+
+                          {pilotPhase === 'finished' && isWinner && (
+                            <>
+                              <div style={{ position: 'absolute', top: '50%', left: `${pct}%`, transform: 'translateY(-50%)', zIndex: 26, pointerEvents: 'none' }}>
+                                <div style={{ animation: '_pilotCelebWalk 1.2s ease-in-out forwards', position: 'relative', left: '-9px' }}>
+                                  <svg width="18" height="36" viewBox="0 0 18 36">
+                                    <circle cx="9" cy="5" r="4" fill="white" fillOpacity="0.95" />
+                                    <path d="M5,5 A4,4 0 0,1 13,5" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
+                                    <line x1="9" y1="9"  x2="9"  y2="22" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+                                    <line x1="9" y1="13" x2="2"  y2="5"  stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                    <line x1="9" y1="13" x2="16" y2="5"  stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                    <line x1="9" y1="22" x2="5"  y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                    <line x1="9" y1="22" x2="13" y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                  </svg>
+                                </div>
+                              </div>
+                              {FLOWERS.map((f, j) => (
+                                <div key={j} className="_flower"
+                                  style={{
+                                    left: `calc(${pct}% + ${f.ox}px)`,
+                                    top: '8px',
+                                    backgroundColor: FLOWER_COLORS[j % FLOWER_COLORS.length],
+                                    animationDelay: `${f.delay}s`,
+                                  }}
+                                />
+                              ))}
+                            </>
+                          )}
 
                           <div className="absolute right-1.5 top-1/2 -translate-y-1/2 text-lg z-30 select-none pointer-events-none">
                             🏁
