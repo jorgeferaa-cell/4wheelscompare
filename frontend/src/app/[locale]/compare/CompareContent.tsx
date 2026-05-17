@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 
 type Tab      = 'specs' | 'race' | 'equipment';
-type RaceMode = '201m' | '400m' | '800m' | 'trip';
+type RaceMode = '201m' | '400m' | '800m' | '1000m' | 'trip';
 
 const SLOT_COLORS  = ['#2563EB', '#059669', '#7C3AED', '#0891B2'];
 const SLOT_LETTERS = ['A', 'B', 'C', 'D'];
@@ -247,6 +247,132 @@ function convertUnits(value: number, type: ConvertType, locale: string): { value
   }
 }
 
+/* ── Pilot entry animation overlay ──────────────────────────── */
+
+interface PilotEntryProps { cars: CarDetail[]; locale: string }
+
+function PilotEntry({ cars, locale }: PilotEntryProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+      <style>{`
+        @keyframes _pwalk {
+          from { transform: translateX(-160px); opacity: 0; }
+          18%  { opacity: 1; }
+          to   { transform: translateX(0);      opacity: 1; }
+        }
+        @keyframes _psit {
+          from { transform: translate(0,0);        opacity: 1; }
+          to   { transform: translate(16px,12px);  opacity: 0; }
+        }
+        @keyframes _dopen {
+          from { transform: rotate(0deg);   }
+          to   { transform: rotate(-48deg); }
+        }
+        @keyframes _dclose {
+          from { transform: rotate(-48deg); }
+          to   { transform: rotate(0deg);   }
+        }
+        @keyframes _carpulse {
+          0%,100% { opacity: 0.55; }
+          50%     { opacity: 0.85; }
+        }
+      `}</style>
+
+      <div className="flex flex-wrap gap-8 justify-center px-6 mb-8">
+        {cars.map((car, i) => (
+          <div key={car.id} className="flex flex-col items-center gap-3">
+            {/* Car label */}
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: SLOT_COLORS[i] }} />
+              <span className="text-xs font-bold text-white">
+                {car.model.make.name} {car.model.name}
+              </span>
+            </div>
+
+            {/* SVG scene */}
+            <svg width="200" height="110" viewBox="0 0 200 110" overflow="hidden">
+
+              {/* ── Car body ── */}
+              <g style={{ animation: '_carpulse 0.55s ease-in-out 1.85s 2 forwards' }}>
+                {/* Main body */}
+                <rect x="8" y="54" width="172" height="38" rx="10"
+                  fill={SLOT_COLORS[i]} fillOpacity="0.55" />
+                {/* Roof */}
+                <path d="M44,54 L60,27 L148,27 L164,54 Z"
+                  fill={SLOT_COLORS[i]} fillOpacity="0.45" />
+                {/* Window glazing */}
+                <path d="M67,53 L76,31 L144,31 L155,53 Z"
+                  fill="rgba(180,225,255,0.2)" />
+                {/* Wheel rear */}
+                <circle cx="42"  cy="91" r="17" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
+                <circle cx="42"  cy="91" r="9"  fill="white"          fillOpacity="0.9"  />
+                <circle cx="42"  cy="91" r="3.5" fill={SLOT_COLORS[i]} fillOpacity="0.55" />
+                {/* Wheel front */}
+                <circle cx="158" cy="91" r="17" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
+                <circle cx="158" cy="91" r="9"  fill="white"          fillOpacity="0.9"  />
+                <circle cx="158" cy="91" r="3.5" fill={SLOT_COLORS[i]} fillOpacity="0.55" />
+                {/* Headlight */}
+                <ellipse cx="176" cy="67" rx="4" ry="3"
+                  fill="rgba(255,255,200,0.65)" />
+                {/* Tail light */}
+                <ellipse cx="12" cy="67" rx="4" ry="3"
+                  fill="rgba(255,80,80,0.55)" />
+              </g>
+
+              {/* ── Driver door (hinge at top-left corner: SVG 80,56) ── */}
+              <g style={{
+                transformBox: 'fill-box',
+                transformOrigin: '0% 0%',
+                animation: '_dopen 0.28s ease-out 0.82s forwards, _dclose 0.28s ease-in 1.62s forwards',
+              }}>
+                <rect x="80" y="56" width="30" height="32" rx="2"
+                  fill="transparent" stroke="white" strokeWidth="1.2" strokeOpacity="0.6" />
+                {/* Door handle */}
+                <line x1="104" y1="70" x2="104" y2="76"
+                  stroke="white" strokeWidth="1.5" strokeOpacity="0.6"
+                  strokeLinecap="round" />
+              </g>
+
+              {/* ── Pilot (drawn at resting position x=76; walkIn from x≈-84) ── */}
+              <g style={{ animation: '_pwalk 0.82s ease-out forwards' }}>
+                {/* inner group: sit-down fade, delayed until after walk */}
+                <g style={{
+                  animation: '_psit 0.38s ease-in 1.18s forwards',
+                }}>
+                  {/* Head */}
+                  <circle cx="76" cy="27" r="6"   fill="white" fillOpacity="0.95" />
+                  {/* Helmet visor */}
+                  <path d="M70,27 A6,6 0 0,1 82,27"
+                    fill={SLOT_COLORS[i]} fillOpacity="0.65" />
+                  {/* Body */}
+                  <line x1="76" y1="33" x2="76" y2="48"
+                    stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                  {/* Arms */}
+                  <line x1="76" y1="37" x2="67" y2="44"
+                    stroke="white" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="76" y1="37" x2="85" y2="44"
+                    stroke="white" strokeWidth="2" strokeLinecap="round" />
+                  {/* Legs */}
+                  <line x1="76" y1="48" x2="70" y2="60"
+                    stroke="white" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="76" y1="48" x2="82" y2="60"
+                    stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </g>
+              </g>
+
+            </svg>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-sm font-semibold text-gray-300 tracking-wide animate-pulse">
+        {locale === 'pt' ? 'Preparando para a corrida…' : 'Getting ready to race…'}
+      </p>
+    </div>
+  );
+}
+
 export default function CompareContent() {
   const t            = useTranslations();
   const searchParams = useSearchParams();
@@ -264,6 +390,7 @@ export default function CompareContent() {
   const [simulated, setSimulated] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [barWidths, setBarWidths] = useState<number[]>([]);
+  const [showPilot,  setShowPilot]  = useState(false);
 
   const PERF_ROWS = [
     { key: 'horsepower',       label: t('compare.specHorsepower'), convertType: 'power'       as ConvertType, lowerIsBetter: false },
@@ -346,9 +473,10 @@ export default function CompareContent() {
 
   const getTimes = (c: CarDetail[], m: RaceMode, d: number): number[] =>
     c.map(car => {
-      if (m === 'trip') return computeTrip(car, d).totalMinutes;
-      if (m === '201m') return car.simulation.sprint_201m.time_seconds;
-      if (m === '400m') return car.simulation.sprint_400m.time_seconds;
+      if (m === 'trip')   return computeTrip(car, d).totalMinutes;
+      if (m === '201m')   return car.simulation.sprint_201m.time_seconds;
+      if (m === '400m')   return car.simulation.sprint_400m.time_seconds;
+      if (m === '1000m')  return car.simulation.sprint_1000m.time_seconds;
       return car.simulation.sprint_800m.time_seconds;
     });
 
@@ -356,14 +484,18 @@ export default function CompareContent() {
     const snapshot = { cars, mode, tripDist };
     setSimulated(false);
     setBarWidths(cars.map(() => 0));
-    setAnimating(true);
+    setShowPilot(true);
     setTimeout(() => {
-      const times = getTimes(snapshot.cars, snapshot.mode, snapshot.tripDist);
-      const minT  = Math.min(...times);
-      setBarWidths(times.map(t => (minT / t) * 100));
-      setSimulated(true);
-      setAnimating(false);
-    }, 120);
+      setShowPilot(false);
+      setAnimating(true);
+      setTimeout(() => {
+        const times = getTimes(snapshot.cars, snapshot.mode, snapshot.tripDist);
+        const minT  = Math.min(...times);
+        setBarWidths(times.map(t => (minT / t) * 100));
+        setSimulated(true);
+        setAnimating(false);
+      }, 120);
+    }, 2500);
   };
 
   const winnerIdx = (() => {
@@ -915,7 +1047,7 @@ export default function CompareContent() {
                 {t('compare.raceDistance')}
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {(['201m', '400m', '800m', 'trip'] as RaceMode[]).map(m => (
+                {(['201m', '400m', '800m', '1000m', 'trip'] as RaceMode[]).map(m => (
                   <button key={m}
                     onClick={() => { setMode(m); setSimulated(false); }}
                     className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
@@ -955,6 +1087,9 @@ export default function CompareContent() {
                 {animating ? t('compare.raceSimulating') : t('compare.raceSimulate')}
               </button>
             </div>
+
+            {/* Pilot entry animation overlay */}
+            {showPilot && <PilotEntry cars={cars} locale={locale} />}
 
             {/* Race track */}
             {(simulated || animating) && (
