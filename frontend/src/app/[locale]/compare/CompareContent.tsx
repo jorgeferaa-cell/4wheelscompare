@@ -1003,6 +1003,14 @@ export default function CompareContent() {
                     40%  { transform: translateX(-8px) translateY(-3px); }
                     100% { transform: translateX(-14px); }
                   }
+                  @keyframes _legSwingL {
+                    0%,100% { transform: rotate(-15deg); }
+                    50%     { transform: rotate(15deg); }
+                  }
+                  @keyframes _legSwingR {
+                    0%,100% { transform: rotate(15deg); }
+                    50%     { transform: rotate(-15deg); }
+                  }
                   @keyframes _flowerFall {
                     0%   { transform: translateY(-25px); opacity:1; }
                     100% { transform: translateY(50px);  opacity:0; }
@@ -1099,14 +1107,29 @@ export default function CompareContent() {
 
                           {pilotPhase === 'walking' && (
                             <div className="_walkPilot">
-                              <svg width="18" height="36" viewBox="0 0 18 36" style={{ transform: 'translateY(-50%)' }}>
-                                <circle cx="9" cy="5" r="4" fill="white" fillOpacity="0.95" />
-                                <path d={`M5,5 A4,4 0 0,1 13,5`} fill={SLOT_COLORS[i]} fillOpacity="0.75" />
-                                <line x1="9" y1="9"  x2="9"  y2="22" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-                                <line x1="9" y1="14" x2="4"  y2="19" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                <line x1="9" y1="14" x2="14" y2="19" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                <line x1="9" y1="22" x2="5"  y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                <line x1="9" y1="22" x2="13" y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                              <svg width="20" height="38" viewBox="0 0 20 38">
+                                {/* Helmet */}
+                                <circle cx="10" cy="5" r="5" fill={SLOT_COLORS[i]} stroke="white" strokeWidth="1" />
+                                {/* Visor */}
+                                <ellipse cx="10" cy="6" rx="3" ry="2" fill="rgba(0,0,0,0.6)" />
+                                {/* Racing suit body */}
+                                <rect x="6" y="10" width="8" height="11" rx="2" fill={SLOT_COLORS[i]} stroke="white" strokeWidth="0.8" />
+                                {/* Belt line */}
+                                <line x1="6" y1="16" x2="14" y2="16" stroke="white" strokeWidth="0.8" />
+                                {/* Left arm */}
+                                <line x1="6" y1="12" x2="2" y2="18" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                                {/* Right arm */}
+                                <line x1="14" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                                {/* Left leg + shoe — swings forward/back */}
+                                <g style={{ transformBox: 'fill-box', transformOrigin: '50% 0%', animation: '_legSwingL 0.4s ease-in-out infinite' }}>
+                                  <line x1="8" y1="21" x2="5" y2="32" stroke={SLOT_COLORS[i]} strokeWidth="2.5" strokeLinecap="round" />
+                                  <rect x="3" y="30" width="5" height="3" rx="1.5" fill="white" />
+                                </g>
+                                {/* Right leg + shoe — opposite phase */}
+                                <g style={{ transformBox: 'fill-box', transformOrigin: '50% 0%', animation: '_legSwingR 0.4s ease-in-out infinite' }}>
+                                  <line x1="12" y1="21" x2="15" y2="32" stroke={SLOT_COLORS[i]} strokeWidth="2.5" strokeLinecap="round" />
+                                  <rect x="13" y="30" width="5" height="3" rx="1.5" fill="white" />
+                                </g>
                               </svg>
                             </div>
                           )}
@@ -1137,15 +1160,25 @@ export default function CompareContent() {
                           {pilotPhase === 'finished' && isWinner && (
                             <>
                               <div style={{ position: 'absolute', top: '50%', left: `${pct}%`, transform: 'translateY(-50%)', zIndex: 26, pointerEvents: 'none' }}>
-                                <div style={{ animation: '_pilotCelebWalk 1.2s ease-in-out forwards', position: 'relative', left: '-9px' }}>
-                                  <svg width="18" height="36" viewBox="0 0 18 36">
-                                    <circle cx="9" cy="5" r="4" fill="white" fillOpacity="0.95" />
-                                    <path d="M5,5 A4,4 0 0,1 13,5" fill={SLOT_COLORS[i]} fillOpacity="0.75" />
-                                    <line x1="9" y1="9"  x2="9"  y2="22" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-                                    <line x1="9" y1="13" x2="2"  y2="5"  stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                    <line x1="9" y1="13" x2="16" y2="5"  stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                    <line x1="9" y1="22" x2="5"  y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-                                    <line x1="9" y1="22" x2="13" y2="32" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                                <div style={{ animation: '_pilotCelebWalk 1.2s ease-in-out forwards', position: 'relative', left: '-10px' }}>
+                                  <svg width="20" height="38" viewBox="0 0 20 38">
+                                    {/* Helmet */}
+                                    <circle cx="10" cy="5" r="5" fill={SLOT_COLORS[i]} stroke="white" strokeWidth="1" />
+                                    {/* Visor */}
+                                    <ellipse cx="10" cy="6" rx="3" ry="2" fill="rgba(0,0,0,0.6)" />
+                                    {/* Racing suit body */}
+                                    <rect x="6" y="10" width="8" height="11" rx="2" fill={SLOT_COLORS[i]} stroke="white" strokeWidth="0.8" />
+                                    {/* Belt line */}
+                                    <line x1="6" y1="16" x2="14" y2="16" stroke="white" strokeWidth="0.8" />
+                                    {/* Arms raised in V */}
+                                    <line x1="6"  y1="12" x2="1"  y2="5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                                    <line x1="14" y1="12" x2="19" y2="5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                                    {/* Left leg + shoe */}
+                                    <line x1="8" y1="21" x2="5" y2="32" stroke={SLOT_COLORS[i]} strokeWidth="2.5" strokeLinecap="round" />
+                                    <rect x="3" y="30" width="5" height="3" rx="1.5" fill="white" />
+                                    {/* Right leg + shoe */}
+                                    <line x1="12" y1="21" x2="15" y2="32" stroke={SLOT_COLORS[i]} strokeWidth="2.5" strokeLinecap="round" />
+                                    <rect x="13" y="30" width="5" height="3" rx="1.5" fill="white" />
                                   </svg>
                                 </div>
                               </div>
